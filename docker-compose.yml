@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  app:
+    container_name: ${DOCKER_APP_CONTAINER_NAME}
+    restart: on-failure
+    build:
+      context: .
+      target: php
+      args:
+        - APP_ENV=${APP_ENV}
+    environment:
+      - APP_ENV=${APP_ENV}
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    ports:
+      - "${DOCKER_APP_PORT}:8080"
+    depends_on:
+      - database
+    networks:
+      - laravel-network
+
+  database:
+    container_name: ${DOCKER_DB_CONTAINER_NAME}
+    restart: on-failure
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./docker/mysql/db-data:/var/lib/mysql
+    networks:
+      - laravel-network
+
+volumes:
+  db-data: ~
+
+networks:
+  laravel-network:
+    driver: bridge
